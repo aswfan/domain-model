@@ -26,7 +26,7 @@ open class TestMe {
 //
 public struct Money {
     //  Extra Credits
-    enum currencyType: String {
+    enum cType: String {
         case USD = "USD"
         case GBP = "GBP"
         case EUR = "EUR"
@@ -35,79 +35,116 @@ public struct Money {
     }
     
     var amount: Int
-    var currency: currencyType
+    var type: cType = cType.Nil
+    var currency: String {
+        get {
+            return type.rawValue
+        }
+        set(value) {
+            switch value {
+            case cType.USD.rawValue:
+                self.type = cType.USD
+            case cType.GBP.rawValue:
+                self.type = cType.GBP
+            case cType.EUR.rawValue:
+                self.type = cType.EUR
+            case cType.CAN.rawValue:
+                self.type = cType.CAN
+            default:
+                self.type = cType.Nil
+                print("Illegal Input: please enter correct currency cType!")
+            }
+
+        }
+    }
+
     
     init(amount: Int, currency: String) {
         self.amount = amount
-        switch currency {
-        case currencyType.USD.rawValue:
-            self.currency = currencyType.USD
-        case currencyType.GBP.rawValue:
-            self.currency = currencyType.GBP
-        case currencyType.EUR.rawValue:
-            self.currency = currencyType.EUR
-        case currencyType.CAN.rawValue:
-            self.currency = currencyType.CAN
-        default:
-            self.currency = currencyType.Nil
-            print("Illegal Input: please enter correct currency type!")
-        }
+        self.currency = currency
     }
     
-    mutating func convert(_ newC: String) -> Money {
-        var nCur: currencyType = currencyType.Nil
+    init(amount: Int, currency: cType) {
+        self.init(amount: amount, currency: currency.rawValue)
+    }
+    
+    func convert(_ newC: String) -> Money {
+        var nCur: cType = cType.Nil
+        var nAmount = 0
         switch newC {
-        case currencyType.USD.rawValue:
-            nCur = currencyType.USD
-        case currencyType.GBP.rawValue:
-            nCur = currencyType.GBP
-        case currencyType.EUR.rawValue:
-            nCur = currencyType.EUR
-        case currencyType.CAN.rawValue:
-            nCur = currencyType.CAN
+        case cType.USD.rawValue:
+            nCur = cType.USD
+        case cType.GBP.rawValue:
+            nCur = cType.GBP
+        case cType.EUR.rawValue:
+            nCur = cType.EUR
+        case cType.CAN.rawValue:
+            nCur = cType.CAN
         default:
-            print("Illegal Input: please enter correct currency type!")
+            print("Illegal Input: please enter correct currency Type!")
         }
         
-        if nCur != currencyType.Nil {
-            self.amount = compute(Cur: currency, nCur: nCur)
-        }else {
-            self.amount = 0
+        if nCur != cType.Nil {
+            nAmount = compute(Cur: self.type, nCur: nCur)
         }
-        return self
+        return Money(amount: nAmount, currency: nCur)
     }
     
-    func compute(Cur: currencyType, nCur: currencyType) -> Int! {
+    func convert(_ newC: cType) -> Money {
+        return self.convert(newC.rawValue)
+    }
+    
+    func compute(Cur: cType, nCur: cType) -> Int! {
         var value: Int? = nil
         switch (Cur, nCur) {
-        case (currencyType.USD, currencyType.GBP):
+        case (cType.USD, cType.GBP):
             value = amount / 2
-        case (currencyType.GBP, currencyType.USD):
+        case (cType.GBP, cType.USD):
             value = amount * 2
-        case (currencyType.USD, currencyType.EUR):
+        case (cType.USD, cType.EUR):
             value = amount / 2 * 3
-        case (currencyType.EUR, currencyType.USD):
+        case (cType.EUR, cType.USD):
             value = amount / 3 * 2
-        case (currencyType.USD, currencyType.CAN):
+        case (cType.USD, cType.CAN):
             value = amount / 4 * 5
-        case (currencyType.CAN, currencyType.USD):
+        case (cType.CAN, cType.USD):
             value = amount / 5 * 4
-        case (currencyType.GBP, currencyType.EUR):
+        case (cType.GBP, cType.EUR):
             value = amount * 3
-        case (currencyType.EUR, currencyType.GBP):
+        case (cType.EUR, cType.GBP):
             value = amount / 3
-        case (currencyType.GBP, currencyType.CAN):
+        case (cType.GBP, cType.CAN):
             value = amount / 2 * 5
-        case (currencyType.CAN, currencyType.GBP):
+        case (cType.CAN, cType.GBP):
             value = amount / 5 * 2
-        case (currencyType.EUR, currencyType.CAN):
+        case (cType.EUR, cType.CAN):
             value = amount / 6 * 5
-        case (currencyType.CAN, currencyType.EUR):
+        case (cType.CAN, cType.EUR):
             value = amount / 5 * 6
         default:
             print("Illegal Currency Coverting!")
         }
         return value
+    }
+    
+    public func add(_ to: Money) -> Money {
+        var nMon = self
+        if nMon.currency != to.currency {
+            nMon = nMon.convert(to.currency)
+        }
+        nMon.amount += to.amount
+        return nMon
+        
+    }
+    
+    
+    public func subtract(_ from: Money) -> Money {
+        var nMon = self
+        if nMon.currency != from.currency {
+            nMon = nMon.convert(from.currency)
+        }
+        nMon.amount -= self.amount
+        return nMon
     }
 
 }
@@ -125,12 +162,27 @@ open class Job {
   }
   
   public init(title : String, type : JobType) {
+    self.title = title
+    self.type = type
   }
   
   open func calculateIncome(_ hours: Int) -> Int {
+    switch type {
+    case let .Hourly(value):
+        let res = value * Double(hours)
+        return Int(res)
+    case let .Salary(value):
+        return value
+    }
   }
   
   open func raise(_ amt : Double) {
+    switch type {
+    case let .Hourly(value):
+        type = JobType.Hourly(value + amt)
+    case let .Salary(value):
+        type = JobType.Salary(value + Int(amt))
+    }
   }
 }
 
@@ -144,15 +196,25 @@ open class Person {
 
   fileprivate var _job : Job? = nil
   open var job : Job? {
-    get { }
+    get {
+        return _job
+    }
     set(value) {
+        if self.age >= 16 {
+            _job = value
+        }
     }
   }
   
   fileprivate var _spouse : Person? = nil
   open var spouse : Person? {
-    get { }
+    get {
+        return _spouse
+    }
     set(value) {
+        if self.age >= 18 {
+            _spouse = value
+        }
     }
   }
   
@@ -163,6 +225,15 @@ open class Person {
   }
   
   open func toString() -> String {
+    var jobStr = "nil"
+    var spoStr = "nil"
+    if let j = job {
+        jobStr = j.title
+    }
+    if let s = spouse {
+        spoStr = s.firstName
+    }
+    return "[Person: firstName:\(self.firstName) lastName:\(self.lastName) age:\(self.age) job:\(jobStr) spouse:\(spoStr)]"
   }
 }
 
@@ -176,9 +247,11 @@ open class Family {
   }
   
   open func haveChild(_ child: Person) -> Bool {
+    return false
   }
   
   open func householdIncome() -> Int {
+    return 0
   }
 }
 
