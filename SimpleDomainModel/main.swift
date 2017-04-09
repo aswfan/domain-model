@@ -244,18 +244,27 @@ open class Family {
   fileprivate var members : [Person] = []
   
   public init(spouse1: Person, spouse2: Person) {
+    if spouse1.spouse == nil && spouse2.spouse == nil {
+        spouse1.spouse = spouse2
+        spouse2.spouse = spouse1
+        members.append(spouse1)
+        members.append(spouse2)
+    }
   }
   
   open func haveChild(_ child: Person) -> Bool {
-    return false
+    members.append(child)
+    return true
   }
   
   open func householdIncome() -> Int {
-    return 0
+    var income = 0
+    for person in members {
+        if let val = person.job {
+            income += val.calculateIncome(2000)
+        }
+    }
+    return income
   }
 }
-
-
-
-
 
