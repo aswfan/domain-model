@@ -244,7 +244,7 @@ open class Family {
   fileprivate var members : [Person] = []
   
   public init(spouse1: Person, spouse2: Person) {
-    if spouse1.spouse == nil && spouse2.spouse == nil {
+    if spouse1.spouse == nil && spouse2.spouse == nil && (spouse1.age > 21 || spouse2.age > 21 ){
         spouse1.spouse = spouse2
         spouse2.spouse = spouse1
         members.append(spouse1)
