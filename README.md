@@ -1,4 +1,4 @@
-## This is 2nd assignment for INFO 449: Mobile Development: IOS (Spring 2017)
+## This is 3nd assignment for INFO 449: Mobile Development: IOS (Spring 2017)
 
 Date: Apr. 9, 2017
 
